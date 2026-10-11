@@ -14,11 +14,19 @@ return new class extends Migration
         Schema::create('users', function (Blueprint $table) {
             $table->id();
             $table->string('name');
-            $table->string('email')->unique();
+            $table->string('username', 30)->unique('idx_users_username');
+            $table->string('email')->unique('idx_users_email');
             $table->timestamp('email_verified_at')->nullable();
             $table->string('password');
             $table->rememberToken();
+            $table->boolean('is_private')->default(false);
+            $table->boolean('is_active')->default(true);
+            $table->enum('role', ['user', 'moderator', 'admin'])->default('user');
             $table->timestamps();
+            $table->softDeletes();
+
+            $table->index(['role', 'is_active'], 'idx_users_role_is_active');
+            $table->index('created_at', 'idx_users_created_at');
         });
 
         Schema::create('password_reset_tokens', function (Blueprint $table) {

@@ -1,0 +1,38 @@
+<?php
+
+namespace Database\Factories;
+
+use App\Models\Follow;
+use App\Models\User;
+use Illuminate\Database\Eloquent\Factories\Factory;
+
+/**
+ * @extends \Illuminate\Database\Eloquent\Factories\Factory<\App\Models\Follow>
+ */
+class FollowFactory extends Factory
+{
+    protected $model = Follow::class;
+
+    public function definition(): array
+    {
+        return [
+            'follower_id' => User::factory(),
+            'following_id' => User::factory(),
+            'status' => 'accepted',
+        ];
+    }
+
+    public function pending(): static
+    {
+        return $this->state(fn (array $attributes) => [
+            'status' => 'pending',
+        ]);
+    }
+
+    public function accepted(): static
+    {
+        return $this->state(fn (array $attributes) => [
+            'status' => 'accepted',
+        ]);
+    }
+}
