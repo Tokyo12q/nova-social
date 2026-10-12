@@ -6,8 +6,16 @@ use App\Models\Comment;
 use App\Models\Post;
 use App\Models\Story;
 use App\Models\User;
+use Illuminate\Auth\Events\Registered;
+use Illuminate\Auth\Listeners\SendEmailVerificationNotification;
+use Illuminate\Auth\Notifications\ResetPassword;
+use Illuminate\Cache\RateLimiting\Limit;
 use Illuminate\Database\Eloquent\Relations\Relation;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Event;
+use Illuminate\Support\Facades\RateLimiter;
 use Illuminate\Support\ServiceProvider;
+use Illuminate\Support\Str;
 
 class AppServiceProvider extends ServiceProvider
 {
@@ -30,5 +38,26 @@ class AppServiceProvider extends ServiceProvider
             'comment' => Comment::class,
             'story' => Story::class,
         ]);
+
+        Event::listen(Registered::class, SendEmailVerificationNotification::class);
+
+        ResetPassword::createUrlUsing(function (User $user, string $token) {
+            $frontendUrl = config('app.frontend_url', 'http://localhost:3000');
+            return "{$frontendUrl}/reset-password?token={$token}&email=".urlencode($user->email);
+        });
+
+        RateLimiter::for('login', function (Request $request) {
+            $identifier = (string) $request->input('login', $request->input('email', ''));
+            $key = Str::transliterate(Str::lower($identifier).'|'.$request->ip());
+
+            return Limit::perMinute(5)->by($key);
+        });
+
+        RateLimiter::for('forgot-password', function (Request $request) {
+            $email = (string) $request->input('email', '');
+            $key = Str::transliterate(Str::lower($email).'|'.$request->ip());
+
+            return Limit::perMinute(5)->by($key);
+        });
     }
 }
