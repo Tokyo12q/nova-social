@@ -29,4 +29,13 @@ Route::prefix('v1')->group(function () {
                 ->middleware('throttle:6,1');
         });
     });
+    // Profiles
+    Route::get('/profiles/{username}', [\App\Http\Controllers\Api\V1\ProfileController::class, 'show']);
+
+    Route::middleware('auth:sanctum')->group(function () {
+        Route::match(['put', 'post'], '/profiles/me', [\App\Http\Controllers\Api\V1\ProfileController::class, 'update']);
+        Route::patch('/settings/account', [\App\Http\Controllers\Api\V1\SettingsController::class, 'update']);
+        Route::patch('/profiles/me/privacy', [\App\Http\Controllers\Api\V1\SettingsController::class, 'updatePrivacy']);
+    });
 });
+

@@ -184,4 +184,62 @@ class User extends Authenticatable implements MustVerifyEmail
     {
         return $this->role === 'moderator';
     }
+
+    /**
+     * Check if this user is followed by the given viewer with accepted status.
+     * Hook for follow system in Phase 4.
+     */
+    public function isFollowedBy(?User $viewer): bool
+    {
+        if (! $viewer) {
+            return false;
+        }
+
+        if ($this->relationLoaded('followers')) {
+            return $this->followers
+                ->where('id', $viewer->id)
+                ->where('pivot.status', 'accepted')
+                ->isNotEmpty();
+        }
+
+        return $this->followers()
+            ->where('follower_id', $viewer->id)
+            ->where('status', 'accepted')
+            ->exists();
+    }
+
+    /**
+     * Determine if the given viewer is allowed to view this user's full profile.
+     */
+    public function canViewFullProfile(?User $viewer): bool
+    {
+        if (! $this->is_private) {
+            return true;
+        }
+
+        if ($viewer && $viewer->id === $this->id) {
+            return true;
+        }
+
+        return $this->isFollowedBy($viewer);
+    }
+
+    /**
+     * Check if there is an active block relationship between this user and another user.
+     */
+    public function hasBlockRelationshipWith(?User $otherUser): bool
+    {
+        if (! $otherUser) {
+            return false;
+        }
+
+        return Block::where(function ($query) use ($otherUser) {
+            $query->where('blocker_id', $this->id)
+                ->where('blocked_id', $otherUser->id);
+        })->orWhere(function ($query) use ($otherUser) {
+            $query->where('blocker_id', $otherUser->id)
+                ->where('blocked_id', $this->id);
+        })->exists();
+    }
+
 }

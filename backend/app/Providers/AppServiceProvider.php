@@ -39,6 +39,9 @@ class AppServiceProvider extends ServiceProvider
             'story' => Story::class,
         ]);
 
+        \Illuminate\Support\Facades\Gate::policy(\App\Models\Profile::class, \App\Policies\ProfilePolicy::class);
+        \Illuminate\Support\Facades\Gate::policy(\App\Models\User::class, \App\Policies\UserPolicy::class);
+
         Event::listen(Registered::class, SendEmailVerificationNotification::class);
 
         ResetPassword::createUrlUsing(function (User $user, string $token) {
