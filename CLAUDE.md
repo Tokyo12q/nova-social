@@ -24,6 +24,8 @@
   - **Do NOT install new packages** without explicit permission from the user. Always ask before running `composer require` or `npm install <package>`.
 - **Language**:
   - All code, comments, documentation, and git commit messages must be in **English**.
+- **Git & GitHub Synchronization**:
+  - Every time a new feature, change, or update is completed, automatically stage, commit with a descriptive message, and push directly to GitHub (`origin main`).
 
 ---
 
